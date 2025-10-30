@@ -1,70 +1,74 @@
-# QualiFlow
+# QualiFlow API (Node.js)
 
-QualiFlow é um sistema web modular para gestão da qualidade com foco em documentação, fluxos de trabalho, processos e atividades. O projeto é construído com Django e Django REST Framework, oferecendo uma API pronta para integração com aplicativos web e móveis.
+QualiFlow é uma API modular para gestão da qualidade escrita em Node.js puro (sem dependências externas) com foco em três pilares:
 
-## Funcionalidades principais
+- **Documentos corporativos com versionamento**
+- **Fluxos de trabalho reutilizáveis e processos operacionais**
+- **Gestão de atividades para equipes e projetos**
 
-- **Gestão de documentos**: cadastro de documentos corporativos, controle de versões com upload de arquivos e histórico completo.
-- **Fluxos de trabalho**: criação de fluxos reutilizáveis com etapas configuráveis, responsáveis e prazos estimados.
-- **Processos operacionais**: geração de processos que respeitam as etapas do fluxo associado, acompanhando status e responsáveis.
-- **Gestão de atividades**: organização de tarefas de equipes e projetos com prioridade, status e datas de conclusão.
-- **Estrutura organizacional**: cadastro de filiais e setores, vinculados a documentos, processos e atividades.
-- **Gestão de usuários**: integração com o modelo de usuários do Django, permitindo controle de acesso e visibilidade por filial/setor.
+Além dos módulos principais, a API suporta o cadastro de filiais, setores e usuários, permitindo construir soluções completas de governança da qualidade sem precisar de um framework pesado.
 
-## Estrutura do projeto
+## Como executar
+
+1. Certifique-se de ter o Node.js 18 ou superior instalado.
+2. Clone este repositório e acesse a pasta do projeto.
+3. Execute o servidor de desenvolvimento:
+
+   ```bash
+   npm run start
+   ```
+
+   O script usa apenas a runtime do Node, portanto nenhuma dependência adicional é necessária.
+
+4. A API ficará disponível em `http://localhost:3000` por padrão. Utilize ferramentas como Insomnia, Postman ou `curl` para enviar requisições HTTP.
+
+> Para alterar a porta, defina a variável de ambiente `PORT` antes de iniciar o servidor (por exemplo, `PORT=4000 npm run start`).
+
+## Estrutura de pastas
 
 ```
-qualiflow/
-├── manage.py
-├── qualiflow/        # Configurações do projeto Django
-└── quality/          # Aplicação principal de gestão da qualidade
+src/
+├── router.js   # Roteador HTTP simples com suporte a parâmetros
+├── server.js   # Definição dos endpoints REST e inicialização do servidor
+└── store.js    # Armazena dados em memória e implementa as regras de negócio
 ```
 
-A aplicação `quality` concentra os modelos, serializers e viewsets responsáveis por cada módulo do sistema, expondo endpoints RESTful prontos para uso.
+## Principais endpoints
 
-## Configuração do ambiente
+Todos os recursos seguem o padrão `/api/<recurso>`. Abaixo alguns exemplos com seus verbos suportados:
 
-1. Crie e ative um ambiente virtual Python 3.11 (ou superior).
-2. Instale as dependências do projeto:
+| Recurso | Rotas principais | Descrição |
+| --- | --- | --- |
+| Filiais | `GET /api/branches`, `POST /api/branches`, `PUT /api/branches/:id`, `DELETE /api/branches/:id` | Cadastro de filiais e controle de dependências |
+| Setores | `GET /api/sectors`, `POST /api/sectors`, `PUT /api/sectors/:id` | Vínculo com filiais e documentação |
+| Usuários | `GET /api/users`, `POST /api/users`, `PUT /api/users/:id` | Base de usuários para atribuição de tarefas |
+| Documentos | `GET /api/documents`, `POST /api/documents` | Cadastro, atualização e associação a filiais/setores |
+| Versões de documento | `POST /api/documents/:id/versions` | Incremento de versões com metadados de upload |
+| Fluxos de trabalho | `GET /api/workflows`, `POST /api/workflows` | Definição de etapas e descrição |
+| Processos | `GET /api/processes`, `POST /api/processes`, `POST /api/processes/:id/advance` | Execução dos fluxos e histórico de etapas |
+| Atividades | `GET /api/activities`, `POST /api/processes/:id/activities`, `PATCH /api/activities/:id` | Gestão de tarefas vinculadas a processos |
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+Todas as respostas retornam JSON no formato `{ "data": ... }` para resultados bem-sucedidos ou `{ "error": { ... } }` para erros.
 
-3. Execute as migrações e crie um superusuário para acessar o painel administrativo:
+## Fluxo básico de uso
 
-   ```bash
-   python manage.py migrate
-   python manage.py createsuperuser
-   ```
+1. **Cadastre a estrutura organizacional** criando filiais (`/api/branches`) e setores (`/api/sectors`).
+2. **Cadastre usuários** responsáveis pelas atividades (`/api/users`).
+3. **Registre documentos** e adicione novas versões conforme necessário (`/api/documents`).
+4. **Configure fluxos de trabalho** com suas etapas (`/api/workflows`).
+5. **Crie processos** baseados nos fluxos definidos (`/api/processes`).
+6. **Avance etapas do processo** e registre histórico (`POST /api/processes/:id/advance`).
+7. **Controle as atividades** relacionadas aos processos (`/api/processes/:id/activities`).
 
-4. Suba o servidor de desenvolvimento:
-
-   ```bash
-   python manage.py runserver
-   ```
-
-A API estará disponível em `http://localhost:8000/api/` e o painel administrativo em `http://localhost:8000/admin/`.
-
-## Endpoints principais
-
-| Recurso | Endpoint | Descrição |
-| ------- | -------- | --------- |
-| Filiais | `/api/branches/` | CRUD completo para filiais |
-| Setores | `/api/sectors/` | Cadastro e vínculo com filiais |
-| Documentos | `/api/documents/` | Gestão de documentos e upload de novas versões |
-| Versões de documentos | `/api/document-versions/` | Histórico completo de versões |
-| Fluxos de trabalho | `/api/workflows/` | Definição de fluxos reutilizáveis |
-| Etapas de fluxo | `/api/workflow-steps/` | Configuração de etapas e responsáveis |
-| Processos | `/api/processes/` | Execução de processos baseados em fluxos |
-| Etapas de processo | `/api/process-steps/` | Acompanhamento do status das etapas |
-| Atividades | `/api/activities/` | Gestão de tarefas por equipe ou projeto |
-| Usuários | `/api/users/` | Consulta de usuários (somente administradores) |
-
-Os endpoints suportam autenticação básica e de sessão através da configuração padrão do Django REST Framework.
+Como o armazenamento é feito em memória, os dados são reiniciados sempre que o servidor é reiniciado. Integrações reais podem estender `src/store.js` para persistir em bancos de dados relacionais ou NoSQL.
 
 ## Próximos passos sugeridos
 
-- Configurar autenticação JWT ou OAuth2 para cenários de produção.
-- Criar interface frontend dedicada (React, Vue ou Angular) integrada à API.
-- Adicionar regras de negócio específicas, como notificações automáticas e relatórios.
+- Persistir dados em um banco relacional (PostgreSQL/MySQL) ou NoSQL (MongoDB) substituindo a store em memória.
+- Adicionar autenticação baseada em tokens JWT para controlar o acesso aos módulos.
+- Criar uma interface web (React, Vue ou Angular) utilizando esta API como backend.
+- Implementar rotinas de notificação (e-mail/Slack) ao avançar etapas de processos ou alterar status de atividades.
+
+## Licença
+
+Este projeto é distribuído sob a licença MIT. Consulte o arquivo `LICENSE` (caso presente) para mais detalhes.

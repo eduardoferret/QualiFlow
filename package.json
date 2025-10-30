@@ -1,0 +1,11 @@
+{
+  "name": "qualiflow",
+  "version": "1.0.0",
+  "description": "API modular para gestão da qualidade com documentos, fluxos, processos e atividades.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "NODE_ENV=development node src/server.js"
+  }
+}
